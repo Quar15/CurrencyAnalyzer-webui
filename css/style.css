@@ -1,0 +1,480 @@
+:root{
+    --background-main: #222;
+    --background-hover: #444;
+    --text-main: #EEE;
+    --highlight: #63FF84;
+    --highlight-alt: rgba(99, 255, 132, 0.2);
+    --highlight-disabled: rgb(34, 85, 45);
+    --warning: #FA0;
+    --error: #F00;
+}
+
+body {
+    background-color: var(--background-main);
+    color: var(--text-main);
+    font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    display: flex;
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+.hidden {
+    display: none;
+}
+
+.btn, input, fieldset {
+    margin: 5px;
+    padding: 10px 15px;
+    border: 1px solid var(--highlight);
+    border-radius: 5px;
+    font-family: "Montserrat", sans-serif;
+    background-color: var(--background-main);
+    color: var(--text-main);
+}
+
+.btn:hover {
+    background-color: var(--highlight);
+    color: var(--background-main);
+    cursor: pointer;
+}
+
+nav {
+    min-width: 250px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 10;
+}
+
+nav .logo {
+    width: 128px;
+    height: 128px;
+    margin: 20px auto;
+}
+
+nav .logo img {
+    width: 100%;
+}
+
+nav .menu {
+    display: flex;
+    flex-direction: column;
+}
+
+nav .menu a {
+    color: var(--text-main);
+    text-decoration: none;
+    padding: 30px 0 30px 30px;
+    margin: 5px 0;
+    text-align: center;
+    border-top: 1px solid var(--text-main);
+    border-bottom: 1px solid var(--text-main);
+    border-right: 1px solid var(--text-main);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+}
+
+nav .menu a:hover {
+    color: var(--highlight);
+}
+
+nav .menu a:hover, nav .menu a.active {
+    border-top: 1px solid var(--highlight);
+    border-bottom: 1px solid var(--highlight);
+    border-right: 1px solid var(--highlight);
+}
+
+nav .menu i {
+    font-size: 25px;
+    margin-right: 17px;
+}
+
+nav .menu a.active i {
+    color: var(--highlight);
+}
+
+nav .picked-currencies {
+    display: flex;
+    flex-direction: column;
+}
+
+nav .picked-currencies h4 {
+    width: 50%;
+    text-align: center;
+}
+
+nav .picked-currencies .currency {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 15px;
+    border-top: 1px solid var(--text-main);
+    border-bottom: 1px solid var(--text-main);
+    border-right: 1px solid var(--text-main);
+    border-radius: 5px;
+    width: 50%;
+    margin: 5px 0;
+}
+
+nav .picked-currencies .currency .remove {
+    border-radius: 50%;
+    color: var(--error);
+    border: 1px solid var(--error);
+    height: 24px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+nav .picked-currencies .currency:hover {
+    background-color: var(--background-hover);
+    cursor: pointer;
+}
+
+nav .picked-currencies .currency:hover .remove {
+    background-color: var(--error);
+    color: var(--background-main);
+}
+
+nav .picked-currencies .currency img {
+    height: 15px;
+}
+
+.notifications {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 100;
+    color: var(--text-main);
+    max-width: 350px;
+}
+
+.notifications .notification {
+    background-color: var(--background-main);
+    padding: 15px;
+    margin: 15px;
+    border: 1px solid var(--highlight);
+    border-left: 8px solid var(--highlight);
+    border-radius: 3px;
+}
+
+.notifications .notification.warning {
+    border: 1px solid var(--warning);
+    border-left: 8px solid var(--warning);
+}
+
+.notifications .notification.error {
+    border: 1px solid var(--error);
+    border-left: 8px solid var(--error);
+}
+
+.notifications .notification:hover {
+    cursor: pointer;
+    background-color: var(--background-hover);
+}
+
+.wrapper {
+    margin-left: 250px;
+}
+
+.wrapper .loading-overlay {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: calc(100% - 250px);
+    z-index: 1;
+    background-color: var(--background-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-overlay .bar {
+    width: 6px;
+    height: 60px;
+    background: white;
+    display: inline-block;
+    transform-origin: bottom;
+    animation: loading 2s ease-in-out infinite;
+}
+
+.loading-overlay .bar:nth-child(1) { animation-delay: .1s }
+.loading-overlay .bar:nth-child(2) { animation-delay: .2s }
+.loading-overlay .bar:nth-child(3) { animation-delay: .3s }
+.loading-overlay .bar:nth-child(4) { animation-delay: .4s }
+.loading-overlay .bar:nth-child(5) { animation-delay: .5s }
+.loading-overlay .bar:nth-child(6) { animation-delay: .6s }
+.loading-overlay .bar:nth-child(7) { animation-delay: .7s }
+.loading-overlay .bar:nth-child(8) { animation-delay: .8s }
+
+@keyframes loading {
+    0% {
+        transform: scaleY(0.1);
+        background-color: var(--text-main);
+    }
+    50% {
+        transform: scaleY(1);
+        background-color: var(--highlight);
+    }
+    100% {
+        transform: scaleY(0.1);
+        background-color: transparent;
+    }
+}
+
+.main-graph {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+}
+
+.graphs {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    margin: 120px 0 70px 0;
+}
+
+.graphs h2 {
+    margin: 30px 0 0 0;
+}
+
+.graphs hr {
+    width: 80%;
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    padding: 10px 30px;
+    position: fixed;
+    border-bottom: 1px solid var(--text-main);
+    width: calc(100% - 350px);
+    background-color: var(--background-main);
+}
+
+.info .filters {
+    display: flex;
+}
+
+.info .filters hr {
+    margin: 0 15px;
+}
+
+.info .search-timeframe {
+    display: flex;
+    margin-left: 15px;
+    align-items: center;
+    margin: auto;
+}
+
+.info .search-timeframe label {
+    text-align: right;
+    margin: 0 15px;
+}
+
+.info .search-timeframe input {
+    width: 145px;
+}
+
+.filter-list, .timeview-filter-list {
+    display: flex;
+}
+
+.filter-list a, .timeview-filter-list a, .currency-filter a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    border: 2px solid var(--text-main);
+    border-radius: 5px;
+    color: var(--text-main);
+    background-color: var(--highlight-alt);
+    padding: 7px;
+    margin: 5px;
+    width: 25px;
+    height: 25px;
+    text-decoration: none;
+}
+
+.filter-list a:hover , .timeview-filter-list a:hover, .currency-filter a:hover {
+    cursor: pointer;
+    background-color: var(--background-hover);
+    border-color: var(--highlight);
+}
+
+.filter-list a.active {
+    background-color: var(--background-main);
+    border-color: var(--highlight);
+}
+
+.search-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.search-bar #server-search {
+    margin: 30px 0 0 0;
+    width: 500px;
+}
+
+.wrapper:has(> form) {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+form {
+    margin: 150px 0;
+}
+
+form h2 {
+    text-align: center;
+}
+
+form .form-group label {
+    display: inline-block;
+    min-width: 200px;
+}
+
+form .form-group .btn {
+    width: 100%;
+    background-color: var(--background-main);
+    color: var(--text-main);
+    margin: 15px 0;
+}
+
+form .form-group .btn:hover {
+    cursor: pointer;
+    background-color: var(--highlight);
+    color: var(--background-main);
+}
+
+form .invalid-feedback {
+    color: var(--error);
+    padding: 10px;
+}
+
+form .form-group .server-list {
+    padding: 0 10px 10px 15px;
+}
+
+form .form-group .server-list div {
+    margin: 5px 0;
+}
+
+.tables {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 0 50px 30px 50px;
+}
+
+.tables .table {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 15px;
+}
+
+.tables .table h2 {
+    color: var(--highlight);
+}
+
+.tables .table table, .currencies table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tables .table table tr:has(td), .currencies table tr:has(td){
+    font-family: "Roboto Mono";
+    text-align: center;
+}
+
+.tables .table table th, .currencies table th {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid var(--text-main);
+}
+
+.tables .table table td, .currencies table td {
+    padding: 10px;
+}
+
+.tables .table table tr:hover td, .currencies table tr:hover td{
+    cursor: pointer;
+    background-color: var(--background-hover);
+}
+
+.positive {
+    color: var(--highlight);
+}
+
+.negative {
+    color: var(--error);
+}
+
+.wrapper .currencies {
+    margin: 120px 100px 50px 100px;
+    width: calc(100vw - 450px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapper .currencies table td div {
+    border-radius: 50%;
+    height: 24px;
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wrapper .currencies table td div.add {
+    border: 1px solid var(--highlight);
+    color: var(--highlight);
+}
+
+.wrapper .currencies table tr.active {
+    background-color: var(--highlight-alt);
+}
+
+.wrapper .currencies table tr:hover div.add {
+    background-color: var(--highlight);
+    color: var(--background-main);
+}
+
+.wrapper .currencies table td div.remove {
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.wrapper .currencies table tr:hover div.remove {
+    background-color: var(--error);
+    color: var(--background-main);
+}
+
+.wrapper table th:hover {
+    background-color: var(--background-hover);
+    cursor: pointer;
+}

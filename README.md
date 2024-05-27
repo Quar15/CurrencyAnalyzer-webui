@@ -1,1 +1,1 @@
-# CurrencyAnalyzer-webui
+# CurrencyAnalyzer Web UI
