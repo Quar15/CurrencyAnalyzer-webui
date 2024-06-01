@@ -20,7 +20,7 @@
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </head>
 <body>
-    <nav>
+    <nav hx-get="{{ url_for('main.currency_watch_list') }}" hx-trigger="load" hx-target="#watch-list">
         <div class="logo">
             <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Currency Analyzer">
         </div>
@@ -28,40 +28,9 @@
             <a href="{{ url_for('main.currency_list') }}"><i class='bx bx-coin'></i>Currencies</a>
             <a href="{{ url_for('main.analyze') }}"><i class='bx bx-search'></i>Analyzer</a>
         </div>
-        <div class="picked-currencies">
-            <h4>6/6</h4>
-            <div class="currency">
-                <img src="" alt="X">
-                <p>PLN</p>
-                <div class="remove">-</div>
-            </div>
-            <div class="currency">
-                <img src="" alt="X">
-                <p>USD</p>
-                <div class="remove">-</div>
-            </div>
-            <div class="currency">
-                <img src="" alt="X">
-                <p>XYZ</p>
-                <div class="remove">-</div>
-            </div>
-            <div class="currency">
-                <img src="" alt="X">
-                <p>ABC</p>
-                <div class="remove">-</div>
-            </div>
-            <div class="currency">
-                <img src="" alt="X">
-                <p>DEF</p>
-                <div class="remove">-</div>
-            </div>
-            <div class="currency">
-                <img src="" alt="X">
-                <p>GHI</p>
-                <div class="remove">-</div>
-            </div>
-        </div>
+        {% include 'partials/watch_list.html' %}
     </nav>
+    {% include 'partials/notifications.html' %}
     <div class="wrapper" id="wrapper">
         {% block content %}{% endblock %}
     </div>

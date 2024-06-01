@@ -1,0 +1,15 @@
+<div class="picked-currencies" id="watch-list">
+    <h4>{{ watched_currencies|length }}/6</h4>
+    {% for currency in watched_currencies %}
+        <div class="currency" hx-get="{{ url_for('main.currency_unwatch_refresh', currency_id=currency.id) }}" hx-target="#watch-list">
+            <img src="" alt="X">
+            <p>{{ currency.name }}</p>
+            <div class="remove">-</div>
+        </div>
+    {% endfor %}
+    {% if watched_currencies|length %}
+        <div>
+            <h4 hx-get="{{ url_for('main.currency_watch_list_clear') }}" hx-target="#watch-list">Clear</h4>
+        </div>
+    {% endif %}
+</div>

@@ -1,0 +1,23 @@
+{% if currency.id in watched_currencies_ids %}
+    <tr class="active" hx-trigger="click" hx-target="this">
+        <td><div hx-get="{{ url_for('main.currency_unwatch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr">X</div></td>
+        <td>{{ currency.name }}</td>
+        <td>00.00 PLN</td>
+        <td>00.00 PLN</td>
+        <td>00.00 PLN</td>
+        <td>-00.00 PLN</td>
+        <td>+99.99%</td>
+        <td><div class="remove" hx-get="{{ url_for('main.currency_watch_list_row', currency_id=currency.id) }}" hx-target="closest tr" hx-swap="outerHTML" hx-trigger="click from:closest tr queue:last delay:.1s">-</div></td>
+    </tr>
+{% else %}
+    <tr hx-trigger="click" hx-target="this">
+        <td><div hx-get="{{ url_for('main.currency_watch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr">X</div></td>
+        <td>{{ currency.name }}</td>
+        <td>00.00 PLN</td>
+        <td>00.00 PLN</td>
+        <td>00.00 PLN</td>
+        <td>-00.00 PLN</td>
+        <td>+99.99%</td>
+        <td><div class="add" hx-get="{{ url_for('main.currency_watch_list_row', currency_id=currency.id) }}" hx-target="closest tr" hx-swap="outerHTML" hx-trigger="click from:closest tr queue:last delay:.1s">+</div></td>
+    </tr>
+{% endif %}

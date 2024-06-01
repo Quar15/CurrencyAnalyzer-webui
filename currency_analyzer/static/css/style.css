@@ -149,7 +149,7 @@ nav .picked-currencies .currency img {
 
 .notifications {
     position: fixed;
-    top: 0;
+    bottom: 0;
     right: 0;
     z-index: 100;
     color: var(--text-main);
