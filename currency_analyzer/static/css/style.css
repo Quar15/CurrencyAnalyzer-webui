@@ -310,7 +310,7 @@ nav .picked-currencies .currency img {
     text-decoration: none;
 }
 
-.filter-list a:hover , .timeview-filter-list a:hover, .currency-filter a:hover {
+.filter-list a:hover , .timeview-filter-list a:hover, .timeview-filter-list a.active, .currency-filter a:hover {
     cursor: pointer;
     background-color: var(--background-hover);
     border-color: var(--highlight);

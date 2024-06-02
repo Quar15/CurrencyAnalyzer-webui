@@ -22,7 +22,7 @@ function createRow(currencyValue) {
     row.appendChild(currencyAvgTd);
 
     let currencyChangeTd = document.createElement("td");
-    const changeValue = currencyValue['values'][currencyValue['values'].length - 1] - currencyValue['values'][0];
+    const changeValue = currencyValue['values'][0] - currencyValue['values'][currencyValue['values'].length - 1];
     if (changeValue > 0) {
         currencyChangeTd.innerText = '+' + changeValue.toFixed(2) + ' PLN';
         currencyChangeTd.classList.add("positive");
@@ -33,7 +33,7 @@ function createRow(currencyValue) {
     row.appendChild(currencyChangeTd);
 
     let currencyChangePercentageTd = document.createElement("td");
-    const changeValuePercent = (changeValue / currencyValue['values'][0]) * 100;
+    const changeValuePercent = (changeValue / currencyValue['values'][currencyValue['values'].length - 1]) * 100;
     if (changeValue > 0) {
         currencyChangePercentageTd.innerText = '+' + changeValuePercent.toFixed(2) + '%';
         currencyChangePercentageTd.classList.add("positive");

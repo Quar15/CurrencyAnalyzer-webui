@@ -24,12 +24,7 @@ function formatDate(date) {
         date.getMonth() + 1,
         date.getDate(),
     ].map((n, i) => n.toString().padStart(i === 4 ? 4 : 2, "0")).join("-");
-    let timePart = [
-        date.getHours(),
-        date.getMinutes(),
-        date.getSeconds()
-    ].map((n, i) => n.toString().padStart(2, "0")).join(":");
-    return datePart + " " + timePart;
+    return datePart;
   }
 
 function addLineToChart(chart, color, value) {
@@ -91,15 +86,13 @@ function removeData(chart) {
 }
 
 const afterDate = (timestamp, value) => { 
-    let yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0);
-    yesterday.setMinutes(0);
-    yesterday.setSeconds(0);
-    yesterday.setMilliseconds(0);
-    let yesterdayTimestamp = yesterday.getTime();
-    console.log(timestamp, yesterdayTimestamp)
-    return timestamp >= yesterdayTimestamp ? value : [];
+    let today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+    let todayTimestamp = today.getTime();
+    return timestamp >= todayTimestamp ? value : [];
 };
 function createConfig(labelText, dataLabels, dataValues, yAxisUnit = '%') {
     return {

@@ -1,107 +1,104 @@
-{% extends "layout.html" %}
-{% block content %}
-    <div class="info">
-        <h2>Analyzer</h2>
-        <div class="filters">
-            <div class="timeview-filter-list">
-                <a href="#">D</a>
-                <a href="#">W</a>
-                <a href="#">M</a>
-                <a href="#">Y</a>
-            </div>
-            <hr/>
-            <div class="filter-list" id="filter-list">
-                <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">7d</a>
-                <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">1m</a>
-                <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">3m</a>
-                <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">6m</a>
-                <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">1y</a>
-            </div>
-            <form class="search-timeframe">
-                <label for="sinceDatetime">Since:</label>
-                <input type="datetime" name="since" id="sinceDatetime" value="{{ since }}">
-                <label for="toDatetime">To:</label>
-                <input type="datetime" name="to" id="toDatetime" value="{{ to }}">
-                <button class="btn" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-vals="js:{since: getInputVal('sinceDatetime'), to: getInputVal('toDatetime')}">Filter</button>
-            </form>
+<div class="info">
+    <h2>Analyzer</h2>
+    <div class="filters">
+        <div class="timeview-filter-list">
+            <a href="#" class="{{ 'active' if zoom == 1 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=1) }}" hx-target="#wrapper">D</a>
+            <a href="#" class="{{ 'active' if zoom == 7 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=7) }}" hx-target="#wrapper">W</a>
+            <a href="#" class="{{ 'active' if zoom == 30 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=30) }}" hx-target="#wrapper">M</a>
+            <a href="#" class="{{ 'active' if zoom == 365 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=365) }}" hx-target="#wrapper">Y</a>
         </div>
+        <hr/>
+        <div class="filter-list" id="filter-list">
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">7d</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">1m</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">3m</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">6m</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">1y</a>
+        </div>
+        <form class="search-timeframe">
+            <label for="sinceDatetime">Since:</label>
+            <input type="datetime" name="since" id="sinceDatetime" value="{{ since }}">
+            <label for="toDatetime">To:</label>
+            <input type="datetime" name="to" id="toDatetime" value="{{ to }}">
+            <button class="btn" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-vals="js:{since: getInputVal('sinceDatetime'), to: getInputVal('toDatetime')}">Filter</button>
+        </form>
     </div>
-    <div class="main-graph">
+</div>
+<div class="main-graph">
+    <div>
+        <h2></h2>
+        <hr/>
+        <canvas id="mainChart" width="1200" height="400"></canvas>
+    </div>
+</div>
+<div class="graphs">
+    {% for currency in currency_values %}
         <div>
-            <h2></h2>
+            <h2>{{ currency['name'] }} Value</h2>
             <hr/>
-            <canvas id="mainChart" width="1200" height="400"></canvas>
+            <canvas class="normal-chart" width="600" height="300"></canvas>
         </div>
+    {% endfor %}
+</div>
+<div class="tables">
+    <div class="table">
+        <h2>Last 30 Days</h2>
+        <table>
+            <tr>
+                <th>Currency</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>Average</th>
+                <th>Change</th>
+                <th>Change (%)</th>
+            </tr>
+        </table>
     </div>
-    <div class="graphs">
-        {% for currency in currency_values %}
-            <div>
-                <h2>{{ currency['name'] }} Value</h2>
-                <hr/>
-                <canvas class="normal-chart" width="600" height="300"></canvas>
-            </div>
-        {% endfor %}
+    <div class="table">
+        <h2>Last 90 Days</h2>
+        <table>
+            <tr>
+                <th>Currency</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>Average</th>
+                <th>Change</th>
+                <th>Change (%)</th>
+            </tr>
+        </table>
     </div>
-    <div class="tables">
-        <div class="table">
-            <h2>Last 30 Days</h2>
-            <table>
-                <tr>
-                    <th>Currency</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Average</th>
-                    <th>Change</th>
-                    <th>Change (%)</th>
-                </tr>
-            </table>
-        </div>
-        <div class="table">
-            <h2>Last 90 Days</h2>
-            <table>
-                <tr>
-                    <th>Currency</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Average</th>
-                    <th>Change</th>
-                    <th>Change (%)</th>
-                </tr>
-            </table>
-        </div>
-        <div class="table">
-            <h2>All</h2>
-            <table>
-                <tr>
-                    <th>Currency</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Average</th>
-                    <th>Change</th>
-                    <th>Change (%)</th>
-                </tr>
-            </table>
-        </div>
-        <div class="table">
-            <h2>From {{ since }}</h2>
-            <table>
-                <tr>
-                    <th>Currency</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Average</th>
-                    <th>Change</th>
-                    <th>Change (%)</th>
-                </tr>
-            </table>
-        </div>
+    <div class="table">
+        <h2>All</h2>
+        <table>
+            <tr>
+                <th>Currency</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>Average</th>
+                <th>Change</th>
+                <th>Change (%)</th>
+            </tr>
+        </table>
     </div>
+    <div class="table">
+        <h2>From {{ since }}</h2>
+        <table>
+            <tr>
+                <th>Currency</th>
+                <th>High</th>
+                <th>Low</th>
+                <th>Average</th>
+                <th>Change</th>
+                <th>Change (%)</th>
+            </tr>
+        </table>
     </div>
-    <script>
-        var labels = {{ labels | safe }};
-        var currencyValues = {{ currency_values | safe }};
-    </script>
-    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/tables.js') }}"></script>
-    <script>updateNavFocus('analyzer');</script>
-{% endblock content %}
+</div>
+</div>
+<script>
+    var labels = {{ labels | safe }};
+    var currencyValues = {{ currency_values | safe }};
+</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tables.js') }}"></script>
+<script>updateNavFocus('analyzer');</script>
