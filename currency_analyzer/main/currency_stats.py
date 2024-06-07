@@ -47,16 +47,17 @@ class CurrencyStats:
             .filter(ExchangeRates.date <= to_date)
             .order_by(ExchangeRates.date)
             .first()
-        ).rate
+        )
         end_value_result = (ExchangeRates.query
             .filter(ExchangeRates.code == self.currency.code)
             .filter(ExchangeRates.date >= from_date)
             .filter(ExchangeRates.date <= to_date)
             .order_by(ExchangeRates.date.desc())
             .first()
-        ).rate
-        print(start_value_result, end_value_result)
-        return end_value_result - start_value_result, ((end_value_result - start_value_result) / start_value_result * 100.0)
+        )
+        if start_value_result is None:
+            return 0, 0
+        return end_value_result.rate - start_value_result.rate, ((end_value_result.rate - start_value_result.rate) / start_value_result.rate * 100.0)
 
     def serialize(self):
         return {

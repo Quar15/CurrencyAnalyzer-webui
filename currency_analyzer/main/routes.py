@@ -9,7 +9,9 @@ from flask import (
     redirect,
     session,
 )
+from sqlalchemy import func
 from datetime import datetime, timedelta, date
+from currency_analyzer import db
 from currency_analyzer.main.models import Currency, ExchangeRates
 from currency_analyzer.main.utils import (
     add_notification_refresh_header,
@@ -34,6 +36,12 @@ DATETIME_FORMAT = "%Y-%m-%d"
 def heartbeat():
     return ""
 
+@main.route("/dev/clear")
+def clear():
+    session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR] = None
+    session[ANALYZE_ZOOM_DAYS_SESSION_VAR] = 1
+    session[UPDATING_ANALYZE_ZOOM_SESSION_VAR] = False
+    return "OK"
 
 @main.route("/notifications")
 def notifications():
@@ -46,51 +54,83 @@ def index():
     return render_template('index.html', htmx_link_to_load=url_for('main.analyze'))
 
 
+def normalize_date_based_on_zoom(date_to_normalize: date, zoom: int) -> date:
+    if zoom == 7:
+        while (date_to_normalize.weekday() != 0):
+            date_to_normalize -= timedelta(days=1)
+        return date_to_normalize
+    elif zoom == 30:
+        return date_to_normalize.replace(day=1)
+    elif zoom == 365:
+        return date_to_normalize.replace(month=1, day=1)
+    return date_to_normalize
+
+
 def get_labels_and_datetimes_in_timeframe(
-    timestamp_since: datetime, timestamp_to: datetime, timedelta_days: int = 1
+    timestamp_since: date, timestamp_to: date, timedelta_days: int = 1
 ):
     labels = []
     datetimes = []
-    x = timestamp_to
-    while x >= timestamp_since:
-        labels.append(datetime.strftime(x, DATETIME_FORMAT))
+    
+    x = normalize_date_based_on_zoom(timestamp_to, timedelta_days)
+    target_timestamp = normalize_date_based_on_zoom(timestamp_since, timedelta_days)
+    while x >= target_timestamp:
+        x = normalize_date_based_on_zoom(x, timedelta_days)
+        labels.append(date.strftime(x, DATETIME_FORMAT))
         datetimes.append(x)
-        x -= timedelta(days=timedelta_days)
+        x -= timedelta(days=1)
     return labels, datetimes
 
 
-def get_timestamps(request, earliest_timestamp):
+def get_timestamps(request, earliest_timestamp) -> (date, date):
     datetime_pattern = re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
     timestamp_since = request.args.get("since", default=None)
     if timestamp_since is None or not datetime_pattern.match(timestamp_since):
         timestamp_since = date.today() - timedelta(days=30)
     else:
-        timestamp_since = datetime.strptime(timestamp_since, DATETIME_FORMAT)
+        timestamp_since = date.fromisoformat(timestamp_since)
 
     timestamp_to = request.args.get("to", default=None)
     if timestamp_to is None or not datetime_pattern.match(timestamp_to):
         timestamp_to = date.today() - timedelta(days=1)
     else:
-        timestamp_to = datetime.strptime(timestamp_to, DATETIME_FORMAT)
+        timestamp_to = date.fromisoformat(timestamp_to)
 
     if timestamp_since < earliest_timestamp:
         timestamp_since = earliest_timestamp
 
     if timestamp_to < timestamp_since:
-        return (date.today() - timedelta(days=7)), (
+        return (
+            date.today() - timedelta(days=30),
             date.today() - timedelta(days=1)
         )
 
     return timestamp_since, timestamp_to
 
 
-def get_currency_values_for_datetimes(currencies: list[Currency], datetimes: list[datetime]) -> list[dict]:
+def agregate_values_to_zoom(currency_code: str, label_datetime: datetime, zoom: int) -> list[dict]:
+    earlier_timestamp = normalize_date_based_on_zoom(label_datetime - timedelta(days=1), zoom)
+    result = (db.session.query(func.avg(ExchangeRates.rate))
+            .filter(ExchangeRates.code == currency_code)
+            .filter(ExchangeRates.date.between(earlier_timestamp, label_datetime)).first()
+    )[0]
+    if result is None:
+        return 'NO DATA'
+    return float(result)
+
+
+def get_currency_values_for_datetimes(currencies: list[Currency], datetimes: list[datetime], zoom: int) -> list[dict]:
     currency_values = []
     for currency in currencies:
         values = []
-        for datetime in datetimes:
-            values.append(ExchangeRates.query.filter(ExchangeRates.code == currency.code).filter(ExchangeRates.date == datetime).one_or_none())
-        currency_values.append(CurrencyValues(currency.code, values).serialize())
+        if zoom > 1:
+            for datetime in datetimes:
+                values.append(agregate_values_to_zoom(currency.code, datetime, zoom))
+            currency_values.append({"name": currency.code, "values": values})
+        else:
+            for datetime in datetimes:
+                values.append(ExchangeRates.query.filter(ExchangeRates.code == currency.code).filter(ExchangeRates.date == datetime).one_or_none())
+            currency_values.append(CurrencyValues(currency.code, values).serialize())
     return currency_values
 
 
@@ -130,13 +170,23 @@ def analyze():
     zoom = session[ANALYZE_ZOOM_DAYS_SESSION_VAR]
 
     if is_zoom_being_updated():
-        timestamp_since, timestamp_to = session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR]
+        timestamp_since, timestamp_to = (
+            datetime.strptime(session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR][0], DATETIME_FORMAT),
+            datetime.strptime(session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR][1], DATETIME_FORMAT),
+        )
         session[UPDATING_ANALYZE_ZOOM_SESSION_VAR] = False
     else:
-        timestamp_since, timestamp_to = get_timestamps(request, date.today() - timedelta(days=1400))
-        session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR] = (timestamp_since, timestamp_to)
+        earliest_timestamp = (ExchangeRates.query
+            .order_by(ExchangeRates.date)
+            .first()
+        ).date
+        timestamp_since, timestamp_to = get_timestamps(request, earliest_timestamp)
+        session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR] = (
+            timestamp_since.strftime(DATETIME_FORMAT), 
+            timestamp_to.strftime(DATETIME_FORMAT)
+        )
     labels, datetimes = get_labels_and_datetimes_in_timeframe(timestamp_since, timestamp_to, zoom)
-    currency_values = get_currency_values_for_datetimes(currencies, datetimes)
+    currency_values = get_currency_values_for_datetimes(currencies, datetimes, zoom)
     currency_stats = get_high_low_average_change_data_between_timestamps(currencies, timestamp_since, timestamp_to)
     return render_template(
         "currency_analyze.html",
