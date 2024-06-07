@@ -81,7 +81,7 @@
         </table>
     </div>
     <div class="table">
-        <h2>From {{ since }}</h2>
+        <h2>From {{ since }} to {{ to }}</h2>
         <table>
             <tr>
                 <th>Currency</th>
@@ -98,6 +98,7 @@
 <script>
     var labels = {{ labels | safe }};
     var currencyValues = {{ currency_values | safe }};
+    var currencyStats = {{ currency_stats | safe }};
 </script>
 <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tables.js') }}"></script>

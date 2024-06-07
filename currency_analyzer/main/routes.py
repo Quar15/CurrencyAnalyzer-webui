@@ -1,4 +1,3 @@
-import random # @TODO: Remove after implementing values in DB
 import re
 from flask import (
     render_template,
@@ -10,8 +9,8 @@ from flask import (
     redirect,
     session,
 )
-from datetime import datetime, timedelta
-from currency_analyzer.main.models import Currency
+from datetime import datetime, timedelta, date
+from currency_analyzer.main.models import Currency, ExchangeRates
 from currency_analyzer.main.utils import (
     add_notification_refresh_header,
     add_page_refresh_header,
@@ -19,6 +18,7 @@ from currency_analyzer.main.utils import (
     REFRESH_PAGE_SESSION_VAR,
 )
 from currency_analyzer.main.currency_value import CurrencyValues
+from currency_analyzer.main.currency_stats import CurrencyStats
 
 main = Blueprint("main", __name__)
 WATCHED_CURRENCY_SESSION_VAR = "watched_currencies"
@@ -52,7 +52,6 @@ def get_labels_and_datetimes_in_timeframe(
     labels = []
     datetimes = []
     x = timestamp_to
-    x = x.replace(hour=0, minute=0, second=0, microsecond=0)
     while x >= timestamp_since:
         labels.append(datetime.strftime(x, DATETIME_FORMAT))
         datetimes.append(x)
@@ -64,36 +63,54 @@ def get_timestamps(request, earliest_timestamp):
     datetime_pattern = re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
     timestamp_since = request.args.get("since", default=None)
     if timestamp_since is None or not datetime_pattern.match(timestamp_since):
-        timestamp_since = datetime.now() - timedelta(days=7)
+        timestamp_since = date.today() - timedelta(days=30)
     else:
         timestamp_since = datetime.strptime(timestamp_since, DATETIME_FORMAT)
-    timestamp_since = timestamp_since.replace(hour=0, minute=0, second=0, microsecond=0)
 
     timestamp_to = request.args.get("to", default=None)
     if timestamp_to is None or not datetime_pattern.match(timestamp_to):
-        timestamp_to = datetime.now() - timedelta(days=1)
+        timestamp_to = date.today() - timedelta(days=1)
     else:
         timestamp_to = datetime.strptime(timestamp_to, DATETIME_FORMAT)
-    timestamp_to = timestamp_to.replace(hour=0, minute=0, second=0, microsecond=0)
 
     if timestamp_since < earliest_timestamp:
         timestamp_since = earliest_timestamp
 
     if timestamp_to < timestamp_since:
-        return (datetime.now() - timedelta(days=7)), (
-            datetime.now() - timedelta(days=1)
+        return (date.today() - timedelta(days=7)), (
+            date.today() - timedelta(days=1)
         )
 
     return timestamp_since, timestamp_to
 
 
-def get_currency_values_for_datetimes(currencies: list[Currency], datetimes: list[datetime]) -> list[CurrencyValues]:
+def get_currency_values_for_datetimes(currencies: list[Currency], datetimes: list[datetime]) -> list[dict]:
     currency_values = []
     for currency in currencies:
-        # @TODO: Query DB for data
-        values = random.sample(range(1, 700), len(datetimes))
-        currency_values.append(CurrencyValues(currency.name, values).serialize())
+        values = []
+        for datetime in datetimes:
+            values.append(ExchangeRates.query.filter(ExchangeRates.code == currency.code).filter(ExchangeRates.date == datetime).one_or_none())
+        currency_values.append(CurrencyValues(currency.code, values).serialize())
     return currency_values
+
+
+def get_high_low_average_change_data_between_timestamps(currencies: list[Currency], from_date: datetime, to_date: datetime) -> list[dict]:
+    currency_stats = []
+    for currency in currencies:
+        earliest_timestamp_for_currency = (ExchangeRates.query
+            .filter(ExchangeRates.code == currency.code)
+            .order_by(ExchangeRates.date)
+            .first()
+        ).date
+        currency_stats.append(
+            {
+                "30days": CurrencyStats(currency, date.today() - timedelta(days=30), date.today()).serialize(),
+                "90days": CurrencyStats(currency, date.today() - timedelta(days=90), date.today()).serialize(),
+                "all": CurrencyStats(currency, earliest_timestamp_for_currency, date.today()).serialize(),
+                "selected": CurrencyStats(currency, from_date, to_date).serialize(),
+            }
+        )
+    return currency_stats
 
 
 def is_zoom_being_updated() -> bool:
@@ -108,21 +125,24 @@ def analyze():
         Currency.id.in_(session[WATCHED_CURRENCY_SESSION_VAR])
     ).all()
 
-    if ANALYZE_ZOOM_DAYS_SESSION_VAR in session:
-        zoom = session[ANALYZE_ZOOM_DAYS_SESSION_VAR]
+    if not ANALYZE_ZOOM_DAYS_SESSION_VAR in session:
+        session[ANALYZE_ZOOM_DAYS_SESSION_VAR] = 1
+    zoom = session[ANALYZE_ZOOM_DAYS_SESSION_VAR]
 
     if is_zoom_being_updated():
         timestamp_since, timestamp_to = session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR]
         session[UPDATING_ANALYZE_ZOOM_SESSION_VAR] = False
     else:
-        timestamp_since, timestamp_to = get_timestamps(request, datetime.now() - timedelta(days=1400))
+        timestamp_since, timestamp_to = get_timestamps(request, date.today() - timedelta(days=1400))
         session[TIMESTAMPS_FOR_ANALYZE_SESSION_VAR] = (timestamp_since, timestamp_to)
     labels, datetimes = get_labels_and_datetimes_in_timeframe(timestamp_since, timestamp_to, zoom)
     currency_values = get_currency_values_for_datetimes(currencies, datetimes)
+    currency_stats = get_high_low_average_change_data_between_timestamps(currencies, timestamp_since, timestamp_to)
     return render_template(
         "currency_analyze.html",
         labels=labels,
         currency_values=currency_values,
+        currency_stats=currency_stats,
         since=timestamp_since.strftime(DATETIME_FORMAT),
         to=timestamp_to.strftime(DATETIME_FORMAT),
         zoom=zoom,
@@ -202,13 +222,13 @@ def currency_watch(currency_id: int):
         flash("Currency not found")
         return redirect(url_for("main.currency_watch_list"))
     if currency_id in session[WATCHED_CURRENCY_SESSION_VAR]:
-        flash(f"Currency '{currency.name}' is already set as watched")
+        flash(f"Currency '{currency.code}' is already set as watched")
         return redirect(url_for("main.currency_watch_list"))
     if len(session[WATCHED_CURRENCY_SESSION_VAR]) >= WATCHED_CURRENCY_LIMIT:
         flash("Cannot add more currencies")
         return redirect(url_for("main.currency_watch_list"))
     session[WATCHED_CURRENCY_SESSION_VAR].append(currency_id)
-    flash(f"Added currency '{currency.name}' to watch list")
+    flash(f"Added currency '{currency.code}' to watch list")
     return redirect(url_for("main.currency_watch_list"))
 
 
@@ -221,7 +241,7 @@ def currency_unwatch(currency_id: int):
     if currency_id in session[WATCHED_CURRENCY_SESSION_VAR]:
         session[WATCHED_CURRENCY_SESSION_VAR].remove(currency_id)
         session[FLASH_MESSAGE_AVAILABLE_SESSION_VAR] = True
-        flash(f"Currency '{currency.name}' removed from watch list")
+        flash(f"Currency '{currency.code}' removed from watch list")
     return redirect(url_for("main.currency_watch_list"))
 
 

@@ -1,7 +1,7 @@
 {% if currency.id in watched_currencies_ids %}
     <tr class="active" hx-trigger="click" hx-target="this">
         <td><div hx-get="{{ url_for('main.currency_unwatch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr">X</div></td>
-        <td>{{ currency.name }}</td>
+        <td>{{ currency.code }}</td>
         <td>00.00 PLN</td>
         <td>00.00 PLN</td>
         <td>00.00 PLN</td>
@@ -12,7 +12,7 @@
 {% else %}
     <tr hx-trigger="click" hx-target="this">
         <td><div hx-get="{{ url_for('main.currency_watch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr">X</div></td>
-        <td>{{ currency.name }}</td>
+        <td>{{ currency.code }}</td>
         <td>00.00 PLN</td>
         <td>00.00 PLN</td>
         <td>00.00 PLN</td>

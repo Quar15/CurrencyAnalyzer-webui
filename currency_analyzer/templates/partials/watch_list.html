@@ -3,7 +3,7 @@
     {% for currency in watched_currencies %}
         <div class="currency" hx-get="{{ url_for('main.currency_unwatch_refresh', currency_id=currency.id) }}" hx-target="#watch-list">
             <img src="" alt="X">
-            <p>{{ currency.name }}</p>
+            <p>{{ currency.code }}</p>
             <div class="remove">-</div>
         </div>
     {% endfor %}
