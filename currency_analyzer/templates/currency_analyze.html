@@ -2,25 +2,25 @@
     <h2>Analyzer</h2>
     <div class="filters">
         <div class="timeview-filter-list">
-            <a href="#" class="{{ 'active' if zoom == 1 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=1) }}" hx-target="#wrapper">D</a>
-            <a href="#" class="{{ 'active' if zoom == 7 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=7) }}" hx-target="#wrapper">W</a>
-            <a href="#" class="{{ 'active' if zoom == 30 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=30) }}" hx-target="#wrapper">M</a>
-            <a href="#" class="{{ 'active' if zoom == 365 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=365) }}" hx-target="#wrapper">Y</a>
+            <a href="#" class="{{ 'active' if zoom == 1 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=1) }}" hx-target="#wrapper" hx-indicator="#loading-overlay">D</a>
+            <a href="#" class="{{ 'active' if zoom == 7 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=7) }}" hx-target="#wrapper" hx-indicator="#loading-overlay">W</a>
+            <a href="#" class="{{ 'active' if zoom == 30 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=30) }}" hx-target="#wrapper" hx-indicator="#loading-overlay">M</a>
+            <a href="#" class="{{ 'active' if zoom == 365 }}" hx-get="{{ url_for('main.analyze_zoom', zoom=365) }}" hx-target="#wrapper" hx-indicator="#loading-overlay">Y</a>
         </div>
         <hr/>
         <div class="filter-list" id="filter-list">
-            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">7d</a>
-            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">1m</a>
-            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">3m</a>
-            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">6m</a>
-            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper">1y</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-indicator="#loading-overlay">7d</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-indicator="#loading-overlay">1m</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-indicator="#loading-overlay">3m</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-indicator="#loading-overlay">6m</a>
+            <a href="#" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-indicator="#loading-overlay">1y</a>
         </div>
         <form class="search-timeframe">
             <label for="sinceDatetime">Since:</label>
             <input type="datetime" name="since" id="sinceDatetime" value="{{ since }}">
             <label for="toDatetime">To:</label>
             <input type="datetime" name="to" id="toDatetime" value="{{ to }}">
-            <button class="btn" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-vals="js:{since: getInputVal('sinceDatetime'), to: getInputVal('toDatetime')}">Filter</button>
+            <button class="btn" hx-get="{{ url_for('main.analyze') }}" hx-target="#wrapper" hx-vals="js:{since: getInputVal('sinceDatetime'), to: getInputVal('toDatetime')}" hx-indicator="#loading-overlay">Filter</button>
         </form>
     </div>
 </div>

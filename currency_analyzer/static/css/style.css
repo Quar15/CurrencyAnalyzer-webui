@@ -184,7 +184,7 @@ nav .picked-currencies .currency img {
     margin-left: 250px;
 }
 
-.wrapper .loading-overlay {
+.loading-overlay {
     position: fixed;
     right: 0;
     top: 0;
@@ -477,4 +477,22 @@ form .form-group .server-list div {
 .wrapper table th:hover {
     background-color: var(--background-hover);
     cursor: pointer;
+}
+
+.unfiltered {
+    display: none;
+}
+
+.loading-overlay {
+    z-index: -1;
+    opacity: 0;
+}
+
+.htmx-request .loading-overlay {
+    z-index: 1;
+    opacity: 1;
+}
+
+.htmx-request.loading-overlay {
+    z-index: 1;
 }

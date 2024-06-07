@@ -111,7 +111,7 @@ function createConfig(labelText, dataLabels, dataValues, yAxisUnit = '%') {
             ],
         },
         options: {
-            borderDash: (ctx) => afterDate(Date.parse(labels[0]), [5, 5]),
+            borderDash: (ctx) => afterDate(Date.parse(labels[labels.length - 1]), [5, 5]),
             hover: {
                 intersect: false,
             },
@@ -126,7 +126,7 @@ function createConfig(labelText, dataLabels, dataValues, yAxisUnit = '%') {
                 y: {
                     ticks: {
                         callback: function(value, index, values) {
-                            return value + ' ' + yAxisUnit;
+                            return value.toFixed(2) + ' ' + yAxisUnit;
                         }
                     },
                     grid: {

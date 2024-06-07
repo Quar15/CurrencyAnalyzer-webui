@@ -27,4 +27,5 @@
         colorChangeColumns(document.querySelectorAll(".currencies table"), 'td:nth-child(6), td:nth-child(7)');
         document.querySelector(".currencies table").addEventListener('htmx:afterSwap', ()=> {colorChangeColumns(document.querySelectorAll(".currencies table"), 'td:nth-child(6), td:nth-child(7)')});
     </script>
+    <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 {% endblock content %}

@@ -21,3 +21,4 @@
         <td><div class="add" hx-get="{{ url_for('main.currency_watch_list_row', currency_id=currency.id) }}" hx-target="closest tr" hx-swap="outerHTML" hx-trigger="click from:closest tr queue:last delay:.1s">+</div></td>
     </tr>
 {% endif %}
+<script>tableRecords = document.querySelectorAll("td:nth-child(2)");</script>

@@ -44,7 +44,6 @@ function createRow(currencyStats, timestampKey) {
     return row;
 }
 
-// @TODO: Correct way to distinct 30 days, 90 days, all and from
 function fillTableWithContent() {
     currencyStats.forEach((currencyStat) => {
         tablesDomList[0].appendChild(createRow(currencyStat, "30days"));
