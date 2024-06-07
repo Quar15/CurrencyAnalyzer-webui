@@ -4,12 +4,39 @@ from currency_analyzer.main.models import Currency, ExchangeRates
 
 
 class CurrencyStats:
-    def __init__(self, currency: Currency, from_date, to_date):
+    def __init__(self):
+        self.high = 0
+        self.low = 0
+        self.average = 0
+        self.change = 0
+        self.change_perc = 0
+
+    def init_from_currency(self, currency: Currency, from_date, to_date) -> 'CurrencyStats':
         self.currency = currency
-        self.high = self._get_high(from_date, to_date)
-        self.low = self._get_low(from_date, to_date)
-        self.average = self._get_avg(from_date, to_date)
-        self.change, self.change_perc = self._get_change(from_date, to_date)
+        self.found_data_in_range: bool = self._has_data_in_range(from_date, to_date)
+        if self.found_data_in_range:
+            self.high = self._get_high(from_date, to_date)
+            self.low = self._get_low(from_date, to_date)
+            self.average = self._get_avg(from_date, to_date)
+            self.change, self.change_perc = self._get_change(from_date, to_date)
+        return self
+
+    def init_from_data(self, currency: Currency, found_data_in_range: bool, high: float, low: float, average: float, change: float, change_perc: float) -> 'CurrencyStats':
+        self.currency = currency
+        self.found_data_in_range = found_data_in_range
+        self.high = high
+        self.low = low
+        self.average = average
+        self.change = change
+        self.change_perc = change_perc
+        return self
+
+    def _has_data_in_range(self, from_date, to_date) -> bool:
+        result = (ExchangeRates.query
+            .filter(ExchangeRates.code == self.currency.code)
+            .filter(ExchangeRates.date.between(from_date, to_date)).first()
+        )
+        return not result is None
 
     def _get_high(self, from_date, to_date) -> float:
         result = (db.session.query(func.max(ExchangeRates.rate))
@@ -62,6 +89,7 @@ class CurrencyStats:
     def serialize(self):
         return {
             "currency": self.currency.code,
+            "found_data_in_range": 'true' if self.found_data_in_range else 'false',
             "high": self.high,
             "low": self.low,
             "avg": self.average,

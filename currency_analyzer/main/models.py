@@ -17,6 +17,7 @@ class Currency(db.Model):
 
 
 class ExchangeRates(db.Model):
+    __tablename__ = 'exchange_rates_partitioned'
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(3), unique=True, nullable=False)
     rate = db.Column(db.Float())

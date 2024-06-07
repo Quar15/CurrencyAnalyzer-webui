@@ -19,7 +19,9 @@
                 <th></th>
             </tr>
             {% for currency in currencies %}
-                {% include 'partials/currency_list_row.html' %}
+                {% with currency_stats=currency_stats_dict[currency.code] %}
+                    {% include 'partials/currency_list_row.html' %}
+                {% endwith %}
             {% endfor %}
         </table>
     <script>updateNavFocus('currencies');</script>

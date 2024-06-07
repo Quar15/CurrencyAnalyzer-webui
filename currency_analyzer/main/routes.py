@@ -144,10 +144,10 @@ def get_high_low_average_change_data_between_timestamps(currencies: list[Currenc
         ).date
         currency_stats.append(
             {
-                "30days": CurrencyStats(currency, date.today() - timedelta(days=30), date.today()).serialize(),
-                "90days": CurrencyStats(currency, date.today() - timedelta(days=90), date.today()).serialize(),
-                "all": CurrencyStats(currency, earliest_timestamp_for_currency, date.today()).serialize(),
-                "selected": CurrencyStats(currency, from_date, to_date).serialize(),
+                "30days": CurrencyStats().init_from_currency(currency, date.today() - timedelta(days=30), date.today()).serialize(),
+                "90days": CurrencyStats().init_from_currency(currency, date.today() - timedelta(days=90), date.today()).serialize(),
+                "all": CurrencyStats().init_from_currency(currency, earliest_timestamp_for_currency, date.today()).serialize(),
+                "selected": CurrencyStats().init_from_currency(currency, from_date, to_date).serialize(),
             }
         )
     return currency_stats
@@ -219,9 +219,42 @@ def currency_list():
             Currency.id.in_(session[WATCHED_CURRENCY_SESSION_VAR])
         ).all()
     ]
+    currency_stats_dict = {}
+
+    results = db.session.query(
+        ExchangeRates.code,
+        func.max(ExchangeRates.rate),
+        func.min(ExchangeRates.rate),
+        func.avg(ExchangeRates.rate)
+    ).filter(
+        ExchangeRates.date.between(date.today() - timedelta(days=30), date.today())
+    ).group_by(ExchangeRates.code).all()
+    for result in results:
+        currency_stats_dict[result[0]] = CurrencyStats().init_from_data(
+            currency=Currency.query.filter(Currency.code == result[0]).first(),
+            found_data_in_range=True,
+            high=result[1],
+            low=result[2], 
+            average=result[3],
+            change=0.0,
+            change_perc=0.0,
+        ).serialize()
+    for currency in currencies:
+        if currency.code not in currency_stats_dict.keys():
+            currency_stats_dict[currency.code] = CurrencyStats().init_from_data(
+                currency=currency,
+                found_data_in_range=False,
+                high=0.0,
+                low=0.0, 
+                average=0.0,
+                change=0.0,
+                change_perc=0.0,
+            ).serialize()
+    print(currency_stats_dict)
     return render_template(
         "currency_list.html",
         currencies=currencies,
+        currency_stats_dict=currency_stats_dict,
         watched_currencies=serialized_watched_currencies,
         watched_currencies_ids=session[WATCHED_CURRENCY_SESSION_VAR],
     )
@@ -248,9 +281,11 @@ def currency_watch_list():
 @main.route("/currency/<int:currency_id>/list/row")
 def currency_watch_list_row(currency_id: int):
     currency = Currency.query.get(currency_id)
+    currency_stats = CurrencyStats().init_from_currency(currency, date.today() - timedelta(days=30), date.today()).serialize()
     return render_template(
         "partials/currency_list_row.html",
         currency=currency,
+        currency_stats=currency_stats,
         watched_currencies_ids=session[WATCHED_CURRENCY_SESSION_VAR],
     )
 
