@@ -228,11 +228,15 @@ function colorChangeColumns(tablesDomList, rowsSelector = 'td:nth-child(5), td:n
         let rows = table.querySelectorAll(rowsSelector);
         rows.forEach((r) => {
             let value = parseFloat(r.innerText);
-            if (!isNaN(value) && value > 0) {
-                r.classList.add("positive");
-            } else {
-                r.classList.add("negative");
-            }
+            if (!isNaN(value)) {
+                if (value > 0) {
+                    r.classList.add("positive");
+                } else if (value == 0 && r.innerText.indexOf("-") === -1) {
+                    // Skip dashes and 0.000
+                } else {
+                    r.classList.add("negative");
+                }
+            } 
         })
     });
 }

@@ -20,7 +20,7 @@ from currency_analyzer.main.utils import (
     REFRESH_PAGE_SESSION_VAR,
 )
 from currency_analyzer.main.currency_value import CurrencyValues
-from currency_analyzer.main.currency_stats import CurrencyStats
+from currency_analyzer.main.currency_stats import CurrencyStats, get_currency_stats
 
 main = Blueprint("main", __name__)
 WATCHED_CURRENCY_SESSION_VAR = "watched_currencies"
@@ -212,45 +212,14 @@ def analyze_zoom(zoom: int):
 def currency_list():
     if not WATCHED_CURRENCY_SESSION_VAR in session:
         session[WATCHED_CURRENCY_SESSION_VAR] = []
-    currencies = Currency.query.all()
     serialized_watched_currencies = [
         c.serialize
         for c in Currency.query.filter(
             Currency.id.in_(session[WATCHED_CURRENCY_SESSION_VAR])
         ).all()
     ]
-    currency_stats_dict = {}
-
-    results = db.session.query(
-        ExchangeRates.code,
-        func.max(ExchangeRates.rate),
-        func.min(ExchangeRates.rate),
-        func.avg(ExchangeRates.rate)
-    ).filter(
-        ExchangeRates.date.between(date.today() - timedelta(days=30), date.today())
-    ).group_by(ExchangeRates.code).all()
-    for result in results:
-        currency_stats_dict[result[0]] = CurrencyStats().init_from_data(
-            currency=Currency.query.filter(Currency.code == result[0]).first(),
-            found_data_in_range=True,
-            high=result[1],
-            low=result[2], 
-            average=result[3],
-            change=0.0,
-            change_perc=0.0,
-        ).serialize()
-    for currency in currencies:
-        if currency.code not in currency_stats_dict.keys():
-            currency_stats_dict[currency.code] = CurrencyStats().init_from_data(
-                currency=currency,
-                found_data_in_range=False,
-                high=0.0,
-                low=0.0, 
-                average=0.0,
-                change=0.0,
-                change_perc=0.0,
-            ).serialize()
-    print(currency_stats_dict)
+    currencies, currency_stats_dict = get_currency_stats()
+    
     return render_template(
         "currency_list.html",
         currencies=currencies,

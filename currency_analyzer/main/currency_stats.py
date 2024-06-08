@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from sqlalchemy import func
 from currency_analyzer import db
 from currency_analyzer.main.models import Currency, ExchangeRates
@@ -96,3 +97,85 @@ class CurrencyStats:
             "change": self.change,
             "change_perc": self.change_perc,
         }
+
+
+def _query_currency_stats(from_date: date, to_date: date) -> (dict, list[ExchangeRates], list[ExchangeRates]):
+    max_min_avg_results = (
+        db.session.query(
+            ExchangeRates.code,
+            func.max(ExchangeRates.rate),
+            func.min(ExchangeRates.rate),
+            func.avg(ExchangeRates.rate)
+        )
+        .filter(
+            ExchangeRates.date.between(from_date, to_date)
+        )
+        .group_by(ExchangeRates.code)
+        .order_by(ExchangeRates.code)
+    ).all()
+
+    earliest_rate_subquery = (
+        db.session.query(
+            ExchangeRates.code,
+            func.min(ExchangeRates.date).label('min_date')
+        )
+        .filter(ExchangeRates.date.between(from_date, to_date))
+        .group_by(ExchangeRates.code)
+        .subquery()
+    )
+    earliest_rate_results = (
+        db.session.query(ExchangeRates)
+        .join(earliest_rate_subquery, (ExchangeRates.code == earliest_rate_subquery.c.code) & (ExchangeRates.date == earliest_rate_subquery.c.min_date))
+        .order_by(ExchangeRates.code)
+    ).all()
+
+    oldest_rate_subquery = (
+        db.session.query(
+            ExchangeRates.code,
+            func.max(ExchangeRates.date).label('max_date')
+        )
+        .filter(ExchangeRates.date.between(from_date, to_date))
+        .group_by(ExchangeRates.code)
+        .subquery()
+    )
+    oldest_rate_results = (
+        db.session.query(ExchangeRates)
+        .join(oldest_rate_subquery, (ExchangeRates.code == oldest_rate_subquery.c.code) & (ExchangeRates.date == oldest_rate_subquery.c.max_date))
+        .order_by(ExchangeRates.code)
+    ).all()
+
+    return max_min_avg_results, earliest_rate_results, oldest_rate_results
+
+
+def get_currency_stats() -> (list[Currency], dict):
+    currencies = Currency.query.all()
+    currency_stats_dict = {}
+    print("PRE")
+    max_min_avg_results, earliest_rate_results, oldest_rate_results = _query_currency_stats(date.today() - timedelta(days=30), date.today())
+    print("POST")
+
+    for i in range(len(max_min_avg_results)):
+        change: float = oldest_rate_results[i].rate - earliest_rate_results[i].rate
+        change_perc: float = change / earliest_rate_results[i].rate * 100.0
+        currency_stats_dict[max_min_avg_results[i][0]] = CurrencyStats().init_from_data(
+            currency=Currency.query.filter(Currency.code == max_min_avg_results[i][0]).first(),
+            found_data_in_range=True,
+            high=max_min_avg_results[i][1],
+            low=max_min_avg_results[i][2], 
+            average=max_min_avg_results[i][3],
+            change=change,
+            change_perc=change_perc,
+        ).serialize()
+    # There can be missing currencies that do not have data from last 30 days
+    for currency in currencies:
+        if currency.code not in currency_stats_dict.keys():
+            currency_stats_dict[currency.code] = CurrencyStats().init_from_data(
+                currency=currency,
+                found_data_in_range=False,
+                high=0.0,
+                low=0.0, 
+                average=0.0,
+                change=0.0,
+                change_perc=0.0,
+            ).serialize()
+    return currencies, currency_stats_dict

@@ -32,9 +32,11 @@ function createRow(currencyStats, timestampKey) {
 
     let currencyChangePercentageTd = document.createElement("td");
     const changeValuePercent = currencyStats[timestampKey]["change_perc"];
-    if (changeValue >= 0) {
+    if (changeValue > 0) {
         currencyChangePercentageTd.innerText = '+' + changeValuePercent.toFixed(3) + '%';
         currencyChangePercentageTd.classList.add("positive");
+    } else if (changeValue == 0) {
+        currencyChangePercentageTd.innerText = changeValuePercent.toFixed(3) + '%';
     } else {
         currencyChangePercentageTd.innerText = changeValuePercent.toFixed(3) + '%';
         currencyChangePercentageTd.classList.add("negative");
