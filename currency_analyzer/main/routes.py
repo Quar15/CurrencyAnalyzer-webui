@@ -85,14 +85,23 @@ def get_labels_and_datetimes_in_timeframe(
 def get_timestamps(request, earliest_timestamp) -> (date, date):
     datetime_pattern = re.compile('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
     timestamp_since = request.args.get("since", default=None)
-    if timestamp_since is None or not datetime_pattern.match(timestamp_since):
+    if timestamp_since is None:
         timestamp_since = date.today() - timedelta(days=30)
+    elif not datetime_pattern.match(timestamp_since):
+        timestamp_since = date.today() - timedelta(days=30)
+        flash(f"Could not parse since date. Using default '{timestamp_since.strftime(DATETIME_FORMAT)}'.", "error")
+        session[FLASH_MESSAGE_AVAILABLE_SESSION_VAR] = True
     else:
         timestamp_since = date.fromisoformat(timestamp_since)
 
     timestamp_to = request.args.get("to", default=None)
-    if timestamp_to is None or not datetime_pattern.match(timestamp_to):
+    if timestamp_to is None:
         timestamp_to = date.today() - timedelta(days=1)
+    elif not datetime_pattern.match(timestamp_to):
+        timestamp_to = date.today() - timedelta(days=1)
+        flash(f"Could not parse to date. Using default '{timestamp_to.strftime(DATETIME_FORMAT)}'.", "error")
+        session[FLASH_MESSAGE_AVAILABLE_SESSION_VAR] = True
+
     else:
         timestamp_to = date.fromisoformat(timestamp_to)
 
@@ -158,6 +167,7 @@ def is_zoom_being_updated() -> bool:
 
 
 @main.route("/analyze")
+@add_notification_refresh_header
 def analyze():
     if not WATCHED_CURRENCY_SESSION_VAR in session:
         session[WATCHED_CURRENCY_SESSION_VAR] = []
@@ -209,7 +219,7 @@ def analyze_zoom(zoom: int):
 
 
 @main.route("/list")
-@cache.cached(timeout=600)
+@cache.cached(timeout=3600)
 def currency_list():
     if not WATCHED_CURRENCY_SESSION_VAR in session:
         session[WATCHED_CURRENCY_SESSION_VAR] = []

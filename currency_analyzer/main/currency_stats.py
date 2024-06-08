@@ -99,7 +99,7 @@ class CurrencyStats:
         }
 
 
-@cache.cached(timeout=600, key_prefix="currency_stats_query")
+@cache.cached(timeout=3600, key_prefix="currency_stats_query")
 def _query_currency_stats(from_date: date, to_date: date) -> (dict, list[ExchangeRates], list[ExchangeRates]):
     max_min_avg_results = (
         db.session.query(
