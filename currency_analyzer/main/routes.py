@@ -11,7 +11,7 @@ from flask import (
 )
 from sqlalchemy import func
 from datetime import datetime, timedelta, date
-from currency_analyzer import db
+from currency_analyzer import db, cache
 from currency_analyzer.main.models import Currency, ExchangeRates
 from currency_analyzer.main.utils import (
     add_notification_refresh_header,
@@ -209,6 +209,7 @@ def analyze_zoom(zoom: int):
 
 
 @main.route("/list")
+@cache.cached(timeout=600)
 def currency_list():
     if not WATCHED_CURRENCY_SESSION_VAR in session:
         session[WATCHED_CURRENCY_SESSION_VAR] = []
@@ -261,6 +262,7 @@ def currency_watch_list_row(currency_id: int):
 
 @main.route("/currency/watched/clear")
 def currency_watch_list_clear():
+    cache.delete('view/' + url_for('main.currency_list'))
     session[REFRESH_PAGE_SESSION_VAR] = True
     session[WATCHED_CURRENCY_SESSION_VAR] = []
     return redirect(url_for("main.currency_watch_list"))
@@ -281,6 +283,7 @@ def currency_watch(currency_id: int):
     if len(session[WATCHED_CURRENCY_SESSION_VAR]) >= WATCHED_CURRENCY_LIMIT:
         flash("Cannot add more currencies")
         return redirect(url_for("main.currency_watch_list"))
+    cache.delete('view/' + url_for('main.currency_list'))
     session[WATCHED_CURRENCY_SESSION_VAR].append(currency_id)
     flash(f"Added currency '{currency.code}' to watch list")
     return redirect(url_for("main.currency_watch_list"))
@@ -296,6 +299,7 @@ def currency_unwatch(currency_id: int):
         session[WATCHED_CURRENCY_SESSION_VAR].remove(currency_id)
         session[FLASH_MESSAGE_AVAILABLE_SESSION_VAR] = True
         flash(f"Currency '{currency.code}' removed from watch list")
+    cache.delete('view/' + url_for('main.currency_list'))
     return redirect(url_for("main.currency_watch_list"))
 
 

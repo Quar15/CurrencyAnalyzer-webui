@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from sqlalchemy import func
-from currency_analyzer import db
+from currency_analyzer import db, cache
 from currency_analyzer.main.models import Currency, ExchangeRates
 
 
@@ -99,6 +99,7 @@ class CurrencyStats:
         }
 
 
+@cache.cached(timeout=600, key_prefix="currency_stats_query")
 def _query_currency_stats(from_date: date, to_date: date) -> (dict, list[ExchangeRates], list[ExchangeRates]):
     max_min_avg_results = (
         db.session.query(
@@ -150,9 +151,7 @@ def _query_currency_stats(from_date: date, to_date: date) -> (dict, list[Exchang
 def get_currency_stats() -> (list[Currency], dict):
     currencies = Currency.query.all()
     currency_stats_dict = {}
-    print("PRE")
     max_min_avg_results, earliest_rate_results, oldest_rate_results = _query_currency_stats(date.today() - timedelta(days=30), date.today())
-    print("POST")
 
     for i in range(len(max_min_avg_results)):
         change: float = oldest_rate_results[i].rate - earliest_rate_results[i].rate

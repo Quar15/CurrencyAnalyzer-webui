@@ -15,6 +15,8 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET_KEY = os.environ['CURRENCY_ANALYZER_SECRET_KEY']
     SQLALCHEMY_DATABASE_URI = os.environ['CURRENCY_ANALYZER_DATABASE_URL']
+    CACHE_TYPE = 'SimpleCache'
+    CACHE_DEFAULT_TIMEOUT = 300
 
 
 class ProductionConfig(Config):
