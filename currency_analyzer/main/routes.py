@@ -12,7 +12,7 @@ from flask import (
 from sqlalchemy import func
 from datetime import datetime, timedelta, date
 from currency_analyzer import db, cache
-from currency_analyzer.main.models import Currency, ExchangeRates
+from currency_analyzer.main.models import Currency, ExchangeRates, ExchangeRatesPredictions
 from currency_analyzer.main.utils import (
     add_notification_refresh_header,
     add_page_refresh_header,
@@ -21,6 +21,7 @@ from currency_analyzer.main.utils import (
 )
 from currency_analyzer.main.currency_value import CurrencyValues
 from currency_analyzer.main.currency_stats import CurrencyStats, get_currency_stats
+from currency_analyzer.main.currency_prediction import get_latest_predictions_for_currencies, get_latest_predictions_dict
 
 main = Blueprint("main", __name__)
 WATCHED_CURRENCY_SESSION_VAR = "watched_currencies"
@@ -173,7 +174,7 @@ def analyze():
         session[WATCHED_CURRENCY_SESSION_VAR] = []
     currencies = Currency.query.filter(
         Currency.id.in_(session[WATCHED_CURRENCY_SESSION_VAR])
-    ).all()
+    ).order_by(Currency.code).all()
 
     if not ANALYZE_ZOOM_DAYS_SESSION_VAR in session:
         session[ANALYZE_ZOOM_DAYS_SESSION_VAR] = 1
@@ -198,6 +199,7 @@ def analyze():
     labels, datetimes = get_labels_and_datetimes_in_timeframe(timestamp_since, timestamp_to, zoom)
     currency_values = get_currency_values_for_datetimes(currencies, datetimes, zoom)
     currency_stats = get_high_low_average_change_data_between_timestamps(currencies, timestamp_since, timestamp_to)
+    latest_predictions = get_latest_predictions_for_currencies(currencies)
     return render_template(
         "currency_analyze.html",
         labels=labels,
@@ -206,6 +208,8 @@ def analyze():
         since=timestamp_since.strftime(DATETIME_FORMAT),
         to=timestamp_to.strftime(DATETIME_FORMAT),
         zoom=zoom,
+        watched_currencies_count=len(session[WATCHED_CURRENCY_SESSION_VAR]),
+        latest_predictions=latest_predictions
     )
 
 
@@ -223,13 +227,14 @@ def analyze_zoom(zoom: int):
 def currency_list():
     if not WATCHED_CURRENCY_SESSION_VAR in session:
         session[WATCHED_CURRENCY_SESSION_VAR] = []
-    serialized_watched_currencies = [
-        c.serialize
-        for c in Currency.query.filter(
+    watched_currencies = [
+        c for c in Currency.query.filter(
             Currency.id.in_(session[WATCHED_CURRENCY_SESSION_VAR])
-        ).all()
+        ).order_by(Currency.code).all()
     ]
+    serialized_watched_currencies = [c.serialize for c in watched_currencies]
     currencies, currency_stats_dict = get_currency_stats()
+    currency_predictions_dict = get_latest_predictions_dict(currencies)
     
     return render_template(
         "currency_list.html",
@@ -237,6 +242,8 @@ def currency_list():
         currency_stats_dict=currency_stats_dict,
         watched_currencies=serialized_watched_currencies,
         watched_currencies_ids=session[WATCHED_CURRENCY_SESSION_VAR],
+        currency_predictions_dict=currency_predictions_dict,
+        latest_prediction_date=next(iter(currency_predictions_dict.values())).date
     )
 
 
@@ -251,7 +258,7 @@ def currency_watch_list():
         c.serialize
         for c in Currency.query.filter(
             Currency.id.in_(session[WATCHED_CURRENCY_SESSION_VAR])
-        ).all()
+        ).order_by(Currency.code).all()
     ]
     return render_template(
         "partials/watch_list.html", watched_currencies=serialized_watched_currencies
@@ -262,11 +269,13 @@ def currency_watch_list():
 def currency_watch_list_row(currency_id: int):
     currency = Currency.query.get(currency_id)
     currency_stats = CurrencyStats().init_from_currency(currency, date.today() - timedelta(days=30), date.today()).serialize()
+    latest_prediction = get_latest_predictions_for_currencies([currency])[currency.code]
     return render_template(
         "partials/currency_list_row.html",
         currency=currency,
         currency_stats=currency_stats,
         watched_currencies_ids=session[WATCHED_CURRENCY_SESSION_VAR],
+        currency_prediction=latest_prediction,
     )
 
 

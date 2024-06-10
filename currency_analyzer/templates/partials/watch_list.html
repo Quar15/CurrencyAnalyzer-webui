@@ -2,7 +2,7 @@
     <h4>{{ watched_currencies|length }}/6</h4>
     {% for currency in watched_currencies %}
         <div class="currency" hx-get="{{ url_for('main.currency_unwatch_refresh', currency_id=currency.id) }}" hx-target="#watch-list">
-            <img src="" alt="X">
+            <img src="{{ url_for('static', filename=currency.image_path) }}">
             <p>{{ currency.code }}</p>
             <div class="remove">-</div>
         </div>

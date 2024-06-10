@@ -6,6 +6,9 @@
             <input type="text" name="currency-search" id="currency-search" placeholder="Search currency">
         </div>
     </div>
+    <div class="main-graph">
+        <h2>Latest prediction: {{ latest_prediction_date }}</h2>
+    </div>
     <div class="currencies">
         <table>
             <tr>
@@ -16,18 +19,21 @@
                 <th>Average</th>
                 <th>Change</th>
                 <th>Change (%)</th>
+                <th>Prediction</th>
                 <th></th>
             </tr>
             {% for currency in currencies %}
                 {% with currency_stats=currency_stats_dict[currency.code] %}
-                    {% include 'partials/currency_list_row.html' %}
+                    {% with currency_prediction=currency_predictions_dict[currency.code] %}
+                        {% include 'partials/currency_list_row.html' %}
+                    {% endwith %}
                 {% endwith %}
             {% endfor %}
         </table>
     <script>updateNavFocus('currencies');</script>
     <script>
-        colorChangeColumns(document.querySelectorAll(".currencies table"), 'td:nth-child(6), td:nth-child(7)');
-        document.querySelector(".currencies table").addEventListener('htmx:afterSwap', ()=> {colorChangeColumns(document.querySelectorAll(".currencies table"), 'td:nth-child(6), td:nth-child(7)')});
+        colorChangeColumns(document.querySelectorAll(".currencies table"), 'td:nth-child(6), td:nth-child(7), td:nth-child(8)');
+        document.querySelector(".currencies table").addEventListener('htmx:afterSwap', ()=> {colorChangeColumns(document.querySelectorAll(".currencies table"), 'td:nth-child(6), td:nth-child(7), td:nth-child(8)')});
     </script>
     <script src="{{ url_for('static', filename='js/search.js') }}"></script>
 {% endblock content %}

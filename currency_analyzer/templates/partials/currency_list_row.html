@@ -1,29 +1,31 @@
 {% if currency.id in watched_currencies_ids %}
     <tr class="active" id="{{ currency.code }}" hx-trigger="click" hx-target="this">
-        <td><div hx-get="{{ url_for('main.currency_unwatch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr">X</div></td>
+        <td><div hx-get="{{ url_for('main.currency_unwatch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr"><img src="{{ url_for('static', filename=currency.image_path) }}"></div></td>
         <td>{{ currency.code }}</td>
         <td>{{ currency_stats.high }}</td>
         <td>{{ currency_stats.low }}</td>
         <td>{{ currency_stats.avg }}</td>
         <td>{{ currency_stats.change }}</td>
         <td>{{ currency_stats.change_perc }}</td>
+        <td>{{ currency_prediction.prediction }}</td>
         <td><div class="remove" hx-get="{{ url_for('main.currency_watch_list_row', currency_id=currency.id) }}" hx-target="closest tr" hx-swap="outerHTML" hx-trigger="click from:closest tr queue:last delay:.1s">-</div></td>
     </tr>
 {% else %}
     <tr id="{{ currency.code }}" hx-trigger="click" hx-target="this">
-        <td><div hx-get="{{ url_for('main.currency_watch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr">X</div></td>
+        <td><div hx-get="{{ url_for('main.currency_watch', currency_id=currency.id) }}" hx-target="#watch-list" hx-trigger="click from:closest tr"><img src="{{ url_for('static', filename=currency.image_path) }}"></div></td>
         <td>{{ currency.code }}</td>
         <td>{{ currency_stats.high }}</td>
         <td>{{ currency_stats.low }}</td>
         <td>{{ currency_stats.avg }}</td>
         <td>{{ currency_stats.change }}</td>
         <td>{{ currency_stats.change_perc }}</td>
+        <td>{{ currency_prediction.prediction }}</td>
         <td><div class="add" hx-get="{{ url_for('main.currency_watch_list_row', currency_id=currency.id) }}" hx-target="closest tr" hx-swap="outerHTML" hx-trigger="click from:closest tr queue:last delay:.1s">+</div></td>
     </tr>
 {% endif %}
 <script>
     tableRecords = document.querySelectorAll("td:nth-child(2)");
-    numberRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(3), tr#{{ currency.code }} td:nth-child(4), tr#{{ currency.code }} td:nth-child(5), tr#{{ currency.code }} td:nth-child(6)");
+    numberRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(3), tr#{{ currency.code }} td:nth-child(4), tr#{{ currency.code }} td:nth-child(5), tr#{{ currency.code }} td:nth-child(6), tr#{{ currency.code }} td:nth-child(8)");
     percentageRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(7)");
 </script>
 {% if currency_stats.found_data_in_range == 'true' %}

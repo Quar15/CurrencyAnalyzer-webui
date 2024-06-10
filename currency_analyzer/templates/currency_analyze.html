@@ -24,82 +24,105 @@
         </form>
     </div>
 </div>
-<div class="main-graph">
-    <div>
-        <h2></h2>
-        <hr/>
-        <canvas id="mainChart" width="1200" height="400"></canvas>
+{% if watched_currencies_count == 0 %}
+    <div class="main-graph">
+        <h2>No currencies selected</h2>
     </div>
-</div>
-<div class="graphs">
-    {% for currency in currency_values %}
+{% else %}
+    <div class="main-graph">
         <div>
-            <h2>{{ currency['name'] }} Value</h2>
+            <h2></h2>
             <hr/>
-            <canvas class="normal-chart" width="600" height="300"></canvas>
+            <canvas id="mainChart" width="1200" height="400"></canvas>
         </div>
-    {% endfor %}
-</div>
-<div class="tables">
-    <div class="table">
-        <h2>Last 30 Days</h2>
-        <table>
-            <tr>
-                <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
-                <th sort-key="high">High<i class='bx bx-sort'></i></th>
-                <th sort-key="low">Low<i class='bx bx-sort'></i></th>
-                <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
-                <th sort-key="change">Change<i class='bx bx-sort'></i></th>
-                <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
-            </tr>
-        </table>
     </div>
-    <div class="table">
-        <h2>Last 90 Days</h2>
-        <table>
-            <tr>
-                <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
-                <th sort-key="high">High<i class='bx bx-sort'></i></th>
-                <th sort-key="low">Low<i class='bx bx-sort'></i></th>
-                <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
-                <th sort-key="change">Change<i class='bx bx-sort'></i></th>
-                <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
-            </tr>
-        </table>
+    <div class="graphs">
+        {% for currency in currency_values %}
+            <div>
+                <h2>{{ currency['name'] }} Value</h2>
+                <hr/>
+                <canvas class="normal-chart" width="600" height="300"></canvas>
+            </div>
+        {% endfor %}
     </div>
-    <div class="table">
-        <h2>All</h2>
-        <table>
-            <tr>
-                <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
-                <th sort-key="high">High<i class='bx bx-sort'></i></th>
-                <th sort-key="low">Low<i class='bx bx-sort'></i></th>
-                <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
-                <th sort-key="change">Change<i class='bx bx-sort'></i></th>
-                <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
-            </tr>
-        </table>
+    <div class="tables">
+        <div class="table">
+            <h2>Last 30 Days</h2>
+            <table>
+                <tr>
+                    <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
+                    <th sort-key="high">High<i class='bx bx-sort'></i></th>
+                    <th sort-key="low">Low<i class='bx bx-sort'></i></th>
+                    <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
+                    <th sort-key="change">Change<i class='bx bx-sort'></i></th>
+                    <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
+                </tr>
+            </table>
+        </div>
+        <div class="table">
+            <h2>Last 90 Days</h2>
+            <table>
+                <tr>
+                    <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
+                    <th sort-key="high">High<i class='bx bx-sort'></i></th>
+                    <th sort-key="low">Low<i class='bx bx-sort'></i></th>
+                    <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
+                    <th sort-key="change">Change<i class='bx bx-sort'></i></th>
+                    <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
+                </tr>
+            </table>
+        </div>
+        <div class="table">
+            <h2>All</h2>
+            <table>
+                <tr>
+                    <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
+                    <th sort-key="high">High<i class='bx bx-sort'></i></th>
+                    <th sort-key="low">Low<i class='bx bx-sort'></i></th>
+                    <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
+                    <th sort-key="change">Change<i class='bx bx-sort'></i></th>
+                    <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
+                </tr>
+            </table>
+        </div>
+        <div class="table">
+            <h2>From {{ since }} to {{ to }}</h2>
+            <table>
+                <tr>
+                    <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
+                    <th sort-key="high">High<i class='bx bx-sort'></i></th>
+                    <th sort-key="low">Low<i class='bx bx-sort'></i></th>
+                    <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
+                    <th sort-key="change">Change<i class='bx bx-sort'></i></th>
+                    <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
+                </tr>
+            </table>
+        </div>
+        <div class="table">
+            <h2>Prediction</h2>
+            <table>
+                <tr>
+                    <th>Currency</th>
+                    <th>Prediction date</th>
+                    <th>Predicted change</th>
+                </tr>
+                {% for prediction in latest_predictions %}
+                    <tr>
+                        <td>{{ prediction.code }}</td>
+                        <td>{{ prediction.date }}</td>
+                        <td>{{ prediction.prediction }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
     </div>
-    <div class="table">
-        <h2>From {{ since }} to {{ to }}</h2>
-        <table>
-            <tr>
-                <th sort-key="currency">Currency<i class='bx bx-sort'></i></th>
-                <th sort-key="high">High<i class='bx bx-sort'></i></th>
-                <th sort-key="low">Low<i class='bx bx-sort'></i></th>
-                <th sort-key="avg">Average<i class='bx bx-sort'></i></th>
-                <th sort-key="change">Change<i class='bx bx-sort'></i></th>
-                <th sort-key="change_perc">Change (%)<i class='bx bx-sort'></i></th>
-            </tr>
-        </table>
     </div>
-</div>
-</div>
-<script>
-    var labels = {{ labels | safe }};
-    var currencyValues = {{ currency_values | safe }};
-    var currencyStats = {{ currency_stats | safe }};
-</script>
-<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-<script src="{{ url_for('static', filename='js/tables.js') }}"></script>
+    <script>
+        var labels = {{ labels | safe }};
+        var currencyValues = {{ currency_values | safe }};
+        var currencyStats = {{ currency_stats | safe }};
+    </script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tables.js') }}"></script>
+{% endif %}
 <script>updateNavFocus('analyzer');</script>

@@ -22,3 +22,10 @@ class ExchangeRates(db.Model):
     code = db.Column(db.String(3), unique=True, nullable=False)
     rate = db.Column(db.Float())
     date = db.Column(db.Date)
+
+
+class ExchangeRatesPredictions(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(3), unique=True, nullable=False)
+    prediction = db.Column(db.Float())
+    date = db.Column(db.Date)
