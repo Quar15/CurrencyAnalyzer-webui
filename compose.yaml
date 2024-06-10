@@ -1,0 +1,6 @@
+services:
+  currency-analyzer:
+    env_file: .env
+    build: .
+    ports:
+      - "5005:5005"

@@ -4,3 +4,4 @@ flask-sqlalchemy
 flask-migrate
 flask-wtf
 flask-caching
+gunicorn
