@@ -149,7 +149,7 @@ def _query_currency_stats(from_date: date, to_date: date) -> (dict, list[Exchang
 
 
 def get_currency_stats() -> (list[Currency], dict):
-    currencies = Currency.query.all()
+    currencies = Currency.query.order_by(Currency.code).all()
     currency_stats_dict = {}
     max_min_avg_results, earliest_rate_results, oldest_rate_results = _query_currency_stats(date.today() - timedelta(days=30), date.today())
 
