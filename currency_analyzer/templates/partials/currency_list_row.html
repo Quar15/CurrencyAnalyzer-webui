@@ -25,8 +25,8 @@
 {% endif %}
 <script>
     tableRecords = document.querySelectorAll("td:nth-child(2)");
-    numberRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(3), tr#{{ currency.code }} td:nth-child(4), tr#{{ currency.code }} td:nth-child(5), tr#{{ currency.code }} td:nth-child(6), tr#{{ currency.code }} td:nth-child(8)");
-    percentageRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(7)");
+    numberRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(3), tr#{{ currency.code }} td:nth-child(4), tr#{{ currency.code }} td:nth-child(5), tr#{{ currency.code }} td:nth-child(6)");
+    percentageRecords = document.querySelectorAll("tr#{{ currency.code }} td:nth-child(7), tr#{{ currency.code }} td:nth-child(8)");
 </script>
 {% if currency_stats.found_data_in_range == 'true' %}
 <script>
